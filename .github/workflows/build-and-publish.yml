@@ -24,7 +24,7 @@ jobs:
 
       - name: Execute Bash Script
         run: |
-          chmod + x ./databricks-otelcol/build.sh
+          chmod +x ./databricks-otelcol/build.sh
           ./databricks-otelcol/build.sh
 
       - name: Upload Artifact 1
