@@ -19,9 +19,9 @@ jobs:
           
       - name: DEBUG
         run: |
-          echo $GOPATH
-          echo $PATH
-          echo $HOME
+          echo GOPATH: $GOPATH
+          echo PATH: $PATH
+          echo HOME: $HOME
           
       - name: Install OpenTelemetry Collector Builder (ocb)
         run: |
