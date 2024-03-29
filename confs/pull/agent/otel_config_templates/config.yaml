@@ -1,0 +1,8 @@
+# Include receivers configuration
+receivers: ${file:receivers.yaml}
+
+# Include exporters configuration
+exporters: ${file:exporters.yaml}
+
+# Include service configuration
+service: ${file:service.yaml}
