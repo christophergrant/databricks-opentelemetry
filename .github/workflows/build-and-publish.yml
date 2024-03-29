@@ -42,5 +42,5 @@ jobs:
       - name: Upload Artifact 2
         uses: actions/upload-artifact@v2
         with:
-          name: databricks-otelcol-ard64
+          name: databricks-otelcol-arm64
           path: ./databricks-otelcol-arm64/databricks-otelcol
