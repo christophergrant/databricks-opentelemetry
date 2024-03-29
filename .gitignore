@@ -23,3 +23,5 @@ go.work
 env.list
 dev
 ocb
+
+.DS_Store

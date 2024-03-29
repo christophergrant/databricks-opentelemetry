@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-PROFILE=azurefe
+PROFILE=DEFAUL
 
 # check if otelcol exists at /dbfs/databricks-otelcol, if it doesn't, upload it
 databricks --profile $PROFILE api get /api/2.0/dbfs/get-status --json '{"path":"dbfs:/databricks-otelcol"}' || {
