@@ -1,0 +1,40 @@
+name: Build and Publish Artifacts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.18"
+
+      - name: Install OpenTelemetry Collector Builder (ocb)
+        run: |
+          go install go.opentelemetry.io/collector/cmd/builder@latest
+          echo "${HOME}/go/bin" >> $GITHUB_PATH
+
+      - name: Execute Bash Script
+        run: |
+          chmod + x ./databricks-otelcol/build.sh
+          ./databricks-otelcol/build.sh
+
+      - name: Upload Artifact 1
+        uses: actions/upload-artifact@v2
+        with:
+          name: databricks-otelcol-amd64
+          path: ./databricks-otelcol/databricks-otelcol-amd64/databricks-otelcol
+
+      - name: Upload Artifact 2
+        uses: actions/upload-artifact@v2
+        with:
+          name: databricks-otelcol-ard64
+          path: ./databricks-otelcol/databricks-otelcol-arm64/databricks-otelcol
