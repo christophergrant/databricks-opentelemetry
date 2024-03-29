@@ -37,10 +37,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: databricks-otelcol-amd64
-          path: ./databricks-otelcol/databricks-otelcol-amd64/databricks-otelcol
+          path: ./databricks-otelcol-amd64/databricks-otelcol
 
       - name: Upload Artifact 2
         uses: actions/upload-artifact@v2
         with:
           name: databricks-otelcol-ard64
-          path: ./databricks-otelcol/databricks-otelcol-arm64/databricks-otelcol
+          path: ./databricks-otelcol-arm64/databricks-otelcol
