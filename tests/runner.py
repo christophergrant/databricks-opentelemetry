@@ -11,7 +11,7 @@ def submit_run(profile):
                                           git_branch="main"),
                 tasks=[
                     jobs.SubmitTask(
-                        notebook_task=jobs.NotebookTask(notebook_path="tests/test.ipynb", 
+                        notebook_task=jobs.NotebookTask(notebook_path="tests/test", 
                                                                 source=jobs.Source.GIT),
                         new_cluster=compute.ClusterSpec(cluster_log_conf=compute.ClusterLogConf(
                             compute.DbfsStorageInfo(destination="dbfs:/tmp/cluster-logs")
