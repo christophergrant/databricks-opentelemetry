@@ -1,31 +1,35 @@
 # Databricks OpenTelemetry
 
-Databricks distribution for OpenTelemetry is an unofficial version of the upstream OpenTelemetry collector and includes out-of-the-box binaries and configurations for usage on all 3 Databricks cloud platforms.
+This is the repository for the Databricks distribution of OpenTelemetry.
+
+OpenTelemetry is a lot of things; most importantly in Databricks' users context, it is a way to collect and process logs and metrics from Databricks compute.
+
+Databricks offers in-UI cluster metrics, but outputting metrics to an observability stack comes with a lot of benefits:
+- Aggregation of metrics across clusters to identify fleet-wide issues
+- Combination of metrics across systems
+- Alerting capabilities
 
 
 ## Features
 
-- A Databricks-specific distribution of the OpenTelemetry collector
-- A set of init scripts for running and configuring the collector
-- Bootstrap scripts for those who do not yet have production-ready observability infrastructure, including setups for Prometheus and Grafana on a single-node cluster
-- Grafana dashboard templates for visualizing pertinent Databricks cluster metrics
+This repository contains:
 
-## Getting Started
+- A Databricks-specific distribution of the OpenTelemetry collector and a set of init scripts for running and configuring these collectors
+- Setup scripts for setting up an OpenTelemetry endpoint on Databricks itself (optional)
+- Guides for how to read metrics from Databricks compute nodes and applications
+- Templated dashboards for visualizing important Databricks cluster metrics
 
-### Prerequisites
-
-- A Databricks workspace
-- (Optional) Existing observability infrastructure that includes an opentelemetry endpoint
+## How to use this repo
 
 ### Installation
 
-1. Clone this repo to your Databricks workspace. We recommend making it read-only for non-admin users and service principals.
-2. (Optionally) Spin up sample observability infrastructure on your Databricks workspace using bootstrap scripts.
+1. Clone this repo to your Databricks workspace. We recommend making it read-only to all users.
+2. (Optionally) Spin up sample observability infrastructure on your Databricks workspace using bootstrap scripts in obs-infra/.
 3. Install the collector by specifying a cluster init script and setting two environment variables to point to your observability endpoint.
 
 ### Limitations
 - Does not work with serverless compute
-- Data access mode support matrix
+- Data access mode conditionally supported, see below chart
 
 | Data Access Mode        | Supported |
 |-------------------------|:---------:|
@@ -38,6 +42,7 @@ Databricks distribution for OpenTelemetry is an unofficial version of the upstre
 - [Azure Access Modes](https://learn.microsoft.com/en-us/azure/databricks/compute/configure#--access-modes)
 - [GCP Access Modes](https://docs.gcp.databricks.com/en/compute/configure.html#access-modes)
 
+For Shared access mode, we recommend using an upcoming feature that allows groups to be assigned to single-user clusters.
 
 ## Other Information
 
