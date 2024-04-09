@@ -1,20 +1,14 @@
 # Databricks OpenTelemetry
 
-This is the repository for the Databricks distribution of OpenTelemetry.
+OpenTelemetry is an open source toolkit for the instrumentation, collection, and exporting of telemetry data - namely logs, metrics, and traces.
 
-OpenTelemetry is a lot of things; most importantly in Databricks' users context, it is a way to collect and process logs and metrics from Databricks compute.
-
-Databricks offers in-UI cluster metrics, but outputting metrics to an observability stack comes with a lot of benefits:
-- Aggregation of metrics across clusters to identify fleet-wide issues
-- Combination of metrics across systems
-- Alerting capabilities
-
+This is the repository for a distribution of OpenTelemetry that is configured for usage on Databricks.
 
 ## Features
 
 This repository contains:
 
-- A Databricks-specific distribution of the OpenTelemetry collector and a set of init scripts for running and configuring these collectors
+- A Databricks-specific distribution of the OpenTelemetry collector and a set of init scripts for running and configuring these collectors on Databricks compute nodes.
 - Setup scripts for setting up an OpenTelemetry endpoint on Databricks itself (optional)
 - Guides for how to read metrics from Databricks compute nodes and applications
 - Templated dashboards for visualizing important Databricks cluster metrics
