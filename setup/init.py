@@ -32,10 +32,10 @@ def generate_driver_proxy_url(ws: WorkspaceClient, cluster_id: str, is_api: bool
 
 
 print("\033[1;36mConfiguring agent installation on other Databricks nodes:\033[0m")
-print(f"  \033[1;34mOTLP_HTTP_ENDPOINT:\033[0m {generate_driver_proxy_url(w, cluster_id, is_api=True, port=4318)}")
-print("  \033[1;34mDB_API_TOKEN:\033[0m \033[4;33m{{your_scope/your_secret}}\033[0m")
+print(f"  \033[1;34mOTLP_HTTP_ENDPOINT=\033[0m {generate_driver_proxy_url(w, cluster_id, is_api=True, port=4318)}")
+print("  \033[1;34mDB_API_TOKEN=\033[0m \033[4;33m{{your_scope/your_secret}}\033[0m")
 print("  \033[1;32mNote:\033[0m Add a workspace init script to your target clusters using path:")
-print("  \033[35m/Workspace/Repos/databricks/opentelemetry/init.sh\033[0m")
+print("  \033[35m/Workspace/Repos/databricks/opentelemetry/agent/init.sh\033[0m")
 
 print("\n\033[1;33mSecurity Recommendation:\033[0m")
 print("  - It's advised to securely store the \033[1;34mDB_API_TOKEN\033[0m as a secret for enhanced security. Please note that this token is accessible to those with shell access to the cluster. We recommend downscaling the permissions of that token.")

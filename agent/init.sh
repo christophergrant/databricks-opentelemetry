@@ -5,6 +5,7 @@ set -euxo pipefail
 initialize_env() {
 	apt install -y gettext
 	export SPARK_NODE_IP=$(hostname -I | awk '{print $1}')
+	mkdir -p /databricks/otelcol
 }
 
 # Function to generate config based on node type
