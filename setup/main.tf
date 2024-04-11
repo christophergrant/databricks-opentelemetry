@@ -52,7 +52,7 @@ resource "databricks_cluster" "opentelemetry" {
 
   init_scripts {
     workspace {
-      destination = "${var.repo_path}/obs-infra/init.sh"
+      destination = "${var.repo_path}/setup/init.sh"
     }
   }
 

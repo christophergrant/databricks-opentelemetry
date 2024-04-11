@@ -26,6 +26,7 @@ generate_config() {
             - targets: [\"${SPARK_NODE_IP}:40001\"]"
 	fi
 
+	touch $config_path
 	cat <<EOF >$config_path
 extensions:
   bearertokenauth:
@@ -84,7 +85,8 @@ EOF
 
 setup_otelcol() {
 	mkdir -p /databricks/otelcol/
-	cp /dbfs/databricks-otelcol/databricks-otelcol /databricks/otelcol/
+	wget -P /databricks/otel https://github.com/christophergrant/databricks-opentelemetry/releases/download/0.0.1/databricks-otelcol-amd64.zip
+	unzip /databricks/otel/databricks-otelcol-amd64.zip -d /databricks/otel && chmod +x /databricks/otel/databricks-otelcol
 
 	cat <<'EOT' | sudo tee /etc/systemd/system/databricks-otelcol.service
 [Unit]
