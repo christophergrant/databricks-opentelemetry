@@ -3,31 +3,17 @@
 set -euxo pipefail
 
 initialize_env() {
+	pwd
+	ls /
+	export SPARK_LOCAL_IP=$(hostname -I | awk '{print $1}')
+	env
 	apt install -y gettext
-	export SPARK_NODE_IP=$(hostname -I | awk '{print $1}')
 	mkdir -p /databricks/otelcol
 }
 
-# Function to generate config based on node type
 generate_config() {
-	local is_driver=$1
 	local config_path="/databricks/otelcol/config.yaml"
-	local receiver_config="    - job_name: \"spark_metrics\"
-          scrape_interval: 10s
-          metrics_path: \"/metrics/prometheus\"
-          static_configs:
-            - targets: [\"${SPARK_NODE_IP}:40001\"]"
-
-	if [[ "$is_driver" == "TRUE" ]]; then
-		receiver_config+="\n        - job_name: \"spark_exec_agg_metrics\"
-          scrape_interval: 10s
-          metrics_path: \"/metrics/executors/prometheus\"
-          static_configs:
-            - targets: [\"${SPARK_NODE_IP}:40001\"]"
-	fi
-
-	touch $config_path
-	cat <<EOF >$config_path
+	cat <<EOF | envsubst >$config_path
 extensions:
   bearertokenauth:
     scheme: "Bearer"
@@ -51,7 +37,16 @@ receivers:
   prometheus:
     config:
       scrape_configs:
-$receiver_config
+        - job_name: "spark_metrics"
+          scrape_interval: 10s
+          metrics_path: "/metrics/prometheus"
+          static_configs:
+            - targets: ["\${SPARK_LOCAL_IP}:40001"]
+        - job_name: "spark_exec_agg_metrics"
+          scrape_interval: 10s
+          metrics_path: "/metrics/executors/prometheus"
+          static_configs:
+            - targets: ["\${SPARK_LOCAL_IP}:40001"]
 
 exporters:
   otlphttp:
@@ -81,6 +76,7 @@ service:
       processors: [attributes]
       exporters: [debug, otlphttp]
 EOF
+
 }
 
 setup_otelcol() {
@@ -133,7 +129,7 @@ EOF
 }
 
 initialize_env
-generate_config "$DB_IS_DRIVER"
+generate_config
 set_spark_confs
 init_spark_prometheus_servelet
 setup_otelcol

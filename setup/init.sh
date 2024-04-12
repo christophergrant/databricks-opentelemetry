@@ -119,6 +119,42 @@ configure_prometheus() {
 
 }
 
+install_grafana() {
+	sudo apt-get install -y apt-transport-https
+	sudo apt-get install -y software-properties-common wget
+	sudo wget -q -O /usr/share/keyrings/grafana.key https://apt.grafana.com/gpg.key
+
+	echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+	sudo apt-get update
+	sudo apt-get install grafana
+	cat <<EOF | envsubst >/etc/grafana/grafana.ini
+[server]
+root_url = $DB_WORKSPACE_URL/driver-proxy/o/$DB_WORKSPACE_ID/$DB_CLUSTER_ID/3000
+serve_from_sub_path = true
+[auth.anonymous]
+enabled = true
+org_name = Main Org.
+org_role = Admin
+hide_version = true
+EOF
+
+	cat <<EOF >/etc/grafana/provisioning/datasources/prometheus.yaml
+apiVersion: 1
+
+datasources:
+- name: Prometheus
+  type: prometheus
+  access: proxy
+  url: http://localhost:9090
+  isDefault: true
+  editable: true
+EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl start grafana-server
+	sudo systemctl status grafana-server
+}
+
 ARCH=$(uname -m)
 case "$ARCH" in
 x86_64)
@@ -138,3 +174,5 @@ download_and_extract
 configure_prometheus
 create_systemd_service
 check_prometheus
+
+install_grafana
