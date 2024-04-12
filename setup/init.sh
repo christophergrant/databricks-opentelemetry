@@ -126,7 +126,7 @@ install_grafana() {
 
 	echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
 	sudo apt-get update
-	sudo apt-get install grafana
+	sudo apt-get install -y grafana
 	cat <<EOF | envsubst >/etc/grafana/grafana.ini
 [server]
 root_url = $DB_WORKSPACE_URL/driver-proxy/o/$DB_WORKSPACE_ID/$DB_CLUSTER_ID/3000

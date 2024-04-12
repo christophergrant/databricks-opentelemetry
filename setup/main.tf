@@ -9,6 +9,14 @@ terraform {
 provider "databricks" {
 }
 
+variable "db_workspace_url" {
+  type = string
+}
+
+variable "db_workspace_id" {
+  type = string
+}
+
 variable "repo_path" {
   description = "The workspace path to the databricks-openteletry repository"
   type        = string
@@ -44,6 +52,11 @@ resource "databricks_cluster" "opentelemetry" {
     # Single-node
     "spark.databricks.cluster.profile" : "singleNode"
     "spark.master" : "local[*]"
+  }
+
+  spark_env_vars = {
+    "DB_WORKSPACE_URL" : var.db_workspace_url
+    "DB_WORKSPACE_ID" : var.db_workspace_id
   }
 
   custom_tags = {

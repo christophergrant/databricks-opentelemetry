@@ -2,6 +2,28 @@ import subprocess
 import json
 from databricks.sdk import WorkspaceClient
 
+def run_terraform_apply(ws: WorkspaceClient):
+  workspace_id = ws.get_workspace_id()
+  workspace_url = ws.config.host
+  command = [
+    "terraform",
+    "apply",
+    "-auto-approve",
+    f"-var=db_workspace_url={workspace_url}",
+    f"-var=db_workspace_id={workspace_id}"
+]
+  print(" ".join(command))
+  result = subprocess.run(command, capture_output=True, text=True)
+  
+  # Check if the command was successful
+  if result.returncode == 0:
+      print("Terraform apply executed successfully.")
+      print(result.stdout)
+  else:
+      print("Terraform apply failed.")
+      print(result.stderr)
+
+
 def get_terraform_output(output_name):
     result = subprocess.run(["terraform", "output", "-json", output_name], capture_output=True, text=True)
     if result.returncode == 0:
@@ -9,9 +31,10 @@ def get_terraform_output(output_name):
     else:
         raise Exception("Error obtaining Terraform output")
 
-cluster_id = get_terraform_output("cluster_id")
-
 w = WorkspaceClient()
+cluster_id = get_terraform_output("cluster_id")
+run_terraform_apply(w)
+
 
 def generate_driver_proxy_url(ws: WorkspaceClient, cluster_id: str, is_api: bool, port: int, endpoint:str = "") -> str:
     workspace_id = ws.get_workspace_id()
@@ -29,7 +52,6 @@ def generate_driver_proxy_url(ws: WorkspaceClient, cluster_id: str, is_api: bool
 
     url_path = f"{'driver-proxy-api' if is_api else 'driver-proxy'}/o/{str(workspace_id)}/{cluster_id}/{port}/{endpoint}"
     return f"{url_prefix}{workspace_id}.{url_suffix}/{url_path}"
-
 
 print("\033[1;36mConfiguring agent installation on other Databricks nodes:\033[0m")
 print(f"  \033[1;34mOTLP_HTTP_ENDPOINT=\033[0m {generate_driver_proxy_url(w, cluster_id, is_api=True, port=4318)}")
