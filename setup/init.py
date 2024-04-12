@@ -32,8 +32,8 @@ def get_terraform_output(output_name):
         raise Exception("Error obtaining Terraform output")
 
 w = WorkspaceClient()
-cluster_id = get_terraform_output("cluster_id")
 run_terraform_apply(w)
+cluster_id = get_terraform_output("cluster_id")
 
 
 def generate_driver_proxy_url(ws: WorkspaceClient, cluster_id: str, is_api: bool, port: int, endpoint:str = "") -> str:
