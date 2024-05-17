@@ -81,7 +81,7 @@ EOF
 
 setup_otelcol() {
 	mkdir -p /databricks/otelcol/
-	wget -P /databricks/otelcol https://github.com/christophergrant/databricks-opentelemetry/releases/download/0.0.1/databricks-otelcol-amd64.zip
+	wget -P /databricks/otelcol https://github.com/christophergrant/databricks-opentelemetry/releases/download/0.0.3/databricks-otelcol-amd64.zip
 	unzip /databricks/otelcol/databricks-otelcol-amd64.zip -d /databricks/otelcol && chmod +x /databricks/otelcol/databricks-otelcol
 
 	cat <<'EOT' | sudo tee /etc/systemd/system/databricks-otelcol.service
