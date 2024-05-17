@@ -22,3 +22,5 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.96.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.96.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/apachesparkreceiver v0.96.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.96.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/lokiexporter v0.96.0
