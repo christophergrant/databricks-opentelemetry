@@ -14,6 +14,11 @@ initialize_env() {
 generate_config() {
 	local config_path="/databricks/otelcol/config.yaml"
 	cat <<EOF | envsubst >$config_path
+extensions:
+  bearertokenauth:
+    scheme: "Bearer"
+    token: "\${DB_API_TOKEN}"
+
 receivers:
   hostmetrics:
     collection_interval: 10s
@@ -46,6 +51,8 @@ receivers:
 exporters:
   otlphttp:
     endpoint: "\${OTLP_HTTP_ENDPOINT}"
+    auth:
+      authenticator: bearertokenauth
   debug:
 
 processors:
@@ -62,6 +69,7 @@ processors:
         action: insert
 
 service:
+  extensions: [bearertokenauth]
   pipelines:
     metrics:
       receivers: [hostmetrics, prometheus]
