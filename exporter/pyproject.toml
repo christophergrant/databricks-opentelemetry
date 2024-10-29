@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "databricks-opentelemetry-exporter"
+dynamic = ["version"]
+description = "A Databricks exporter using OpenTelemetry"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Monitoring",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp",
+]
+authors = [
+    { name="Christopher Grant", email="chris.grant@databricks.com" }
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "databricks_opentelemetry_exporter.__version__"}
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort", "databricks-sdk"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+select = ["E", "F", "I"]
+ignore = []
+line-length = 88
+target-version = "py37"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]

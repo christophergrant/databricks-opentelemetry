@@ -2,22 +2,21 @@
 
 set -euxo pipefail
 
+# Initialize environment, outputting debugging symbols where required
 initialize_env() {
-	pwd
-	ls /
 	export SPARK_LOCAL_IP=$(hostname -I | awk '{print $1}')
 	env
-	apt install -y gettext
 	mkdir -p /databricks/otelcol
 }
 
+# Generate an OpenTelemetry configuration
 generate_config() {
 	local config_path="/databricks/otelcol/config.yaml"
 	cat <<EOF | envsubst >$config_path
 extensions:
   bearertokenauth:
-    scheme: "Bearer"
-    token: "\${DB_API_TOKEN}"
+    scheme: Bearer
+    token: ${env:DB_API_TOKEN}
 
 receivers:
   hostmetrics:
@@ -37,20 +36,20 @@ receivers:
   prometheus:
     config:
       scrape_configs:
-        - job_name: "spark_metrics"
+        - job_name: spark_metrics
           scrape_interval: 10s
-          metrics_path: "/metrics/prometheus"
+          metrics_path: /metrics/prometheus
           static_configs:
-            - targets: ["\${SPARK_LOCAL_IP}:40001"]
-        - job_name: "spark_exec_agg_metrics"
+            - targets: [${env:SPARK_LOCAL_IP}:40001]
+        - job_name: spark_aggregated_executor_metrics
           scrape_interval: 10s
-          metrics_path: "/metrics/executors/prometheus"
+          metrics_path: /metrics/executors/prometheus
           static_configs:
-            - targets: ["\${SPARK_LOCAL_IP}:40001"]
+            - targets: [${env:SPARK_LOCAL_IP}:40001]
 
 exporters:
   otlphttp:
-    endpoint: "\${OTLP_HTTP_ENDPOINT}"
+    endpoint: ${env:OTLP_HTTP_ENDPOINT}
     auth:
       authenticator: bearertokenauth
   debug:
@@ -59,13 +58,13 @@ processors:
   attributes:
     actions:
       - key: databricks_cluster_id
-        value: \${DB_CLUSTER_ID}
+        value: ${env:DB_CLUSTER_ID}
         action: insert
       - key: databricks_cluster_name
-        value: \${DB_CLUSTER_NAME}
+        value: ${env:DB_CLUSTER_NAME}
         action: insert
       - key: databricks_is_driver
-        value: \${DB_IS_DRIVER}
+        value: ${env:DB_IS_DRIVER}
         action: insert
 
 service:
@@ -79,12 +78,14 @@ EOF
 
 }
 
+# Download, install, and start a systemd service for OpenTelemetry
 setup_otelcol() {
-	mkdir -p /databricks/otelcol/
-	wget -P /databricks/otelcol https://github.com/christophergrant/databricks-opentelemetry/releases/download/0.0.3/databricks-otelcol-amd64.zip
+	# If in restricted networking environment, will need to reconfigure this to pull from a trusted, non-public source
+	#   Can pull from some other storage like S3, ADLS or GCS, Unity Catalog Volumes, or DBFS instead
+	wget -P /databricks/otelcol https://github.com/christophergrant/databricks-opentelemetry/releases/download/0.0.2/databricks-otelcol-amd64.zip
 	unzip /databricks/otelcol/databricks-otelcol-amd64.zip -d /databricks/otelcol && chmod +x /databricks/otelcol/databricks-otelcol
 
-	cat <<'EOT' | sudo tee /etc/systemd/system/databricks-otelcol.service
+	cat <<EOT | sudo tee /etc/systemd/system/databricks-otelcol.service
 [Unit]
 Description=Databricks OpenTelemetry Collector Service
 After=network.target
@@ -105,6 +106,7 @@ EOT
 }
 
 # Function to initialize Spark Prometheus Servlet
+# https://spark.apache.org/docs/latest/monitoring.html#metrics
 init_spark_prometheus_servelet() {
 	cat <<EOF >/databricks/spark/conf/metrics.properties
 *.source.jvm.class=org.apache.spark.metrics.source.JvmSource
@@ -116,6 +118,7 @@ EOF
 }
 
 # Function to set Spark configurations
+# https://spark.apache.org/docs/latest/monitoring.html#list-of-available-metrics-providers
 set_spark_confs() {
 	local SPARK_DEFAULTS_CONF_PATH="/databricks/driver/conf/00-databricks-otel.conf"
 
@@ -128,6 +131,7 @@ set_spark_confs() {
 EOF
 }
 
+# Main logic
 initialize_env
 generate_config
 set_spark_confs
