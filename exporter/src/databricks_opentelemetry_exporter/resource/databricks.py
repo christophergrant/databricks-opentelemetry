@@ -1,3 +1,4 @@
+from pyspark.sql import SparkSession
 from opentelemetry.sdk.resources import ResourceAttributes
 
 DATABRICKS_JOB_ID = "databricks.job_id"
@@ -80,13 +81,13 @@ def get_task_id():
             pass
     return None
 
-def get_dbr_version():
+def get_dbr_version(spark):
     try:
         return spark.sql("select current_version().dbr_version as dbr_version").collect()[0]["dbr_version"]
     except:
         return None
 
-def get_attributes():
+def get_attributes(spark: SparkSession):
     return {
         ResourceAttributes.CLOUD_PROVIDER: get_cloud(),
         ResourceAttributes.CLOUD_REGION: get_region(), 
@@ -95,5 +96,5 @@ def get_attributes():
         DATABRICKS_JOB_RUN_ID: get_job_run_id(),
         DATABRICKS_TASK_ID: get_task_id(),
         ResourceAttributes.PROCESS_OWNER: get_user(),
-        ResourceAttributes.PROCESS_RUNTIME_VERSION: get_dbr_version()
+        ResourceAttributes.PROCESS_RUNTIME_VERSION: get_dbr_version(spark)
     }
