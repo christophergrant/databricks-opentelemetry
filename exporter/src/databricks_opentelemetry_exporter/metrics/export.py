@@ -1,70 +1,78 @@
-from opentelemetry.sdk.metrics import MetricReader
 from opentelemetry.sdk.metrics.export import (
-    MetricExporter,
-    MetricExportResult,
+    AggregationTemporality,
     MetricsData,
+    MetricExporter, 
+    MetricExportResult,
 )
-from typing import Callable, Sequence
-from uuid import uuid4
-import os
+
 import json
+import os
+import random
+import string
 
 class DatabricksVolumeMetricsExporter(MetricExporter):
-    """
-    Implementation of :class:`MetricExporter` that writes metrics to a
-    random file in a Databricks Volume.
-
-    This class will only work on Databricks. It requires a volume to be mounted.
-    """
-
-    def __init__(
-        self,
-        metrics_dir: str = None,
-        formatter: Callable[[MetricsData], str] = lambda data: json.dumps(data.to_dict(), default=str) + '\n',
-    ):
-        if not metrics_dir:
-            raise ValueError("metrics_dir must be provided")
-        
-        self.metrics_dir = metrics_dir
-        self.formatter = formatter
-        self.file = None
+    """Custom OpenTelemetry exporter that writes metrics to random files"""
+    
+    def __init__(self, output_dir="./metrics_output"):
+        self.output_dir = output_dir
 
     def export(self, metrics_data: MetricsData) -> MetricExportResult:
         try:
-            filename = f"{uuid4()}.json"
-            filepath = os.path.join(self.metrics_dir, filename)
-            print(f"Writing metrics to file: {filepath}")
-            self.file = open(filepath, "w")
+            # Generate random filename
+            filename = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            filepath = os.path.join(self.output_dir, f"metrics_{filename}.json")
 
-            self.file.write(self.formatter(metrics_data))
-            self.file.flush()
-            self.file.close()
-            self.file = None
+            # Convert metrics to dict format
+            metrics_dict = {
+                "resource": {
+                    "attributes": dict(metrics_data.resource.attributes)
+                },
+                "scope_metrics": []
+            }
+
+            for scope_metrics in metrics_data.resource_metrics[0].scope_metrics:
+                scope_data = {
+                    "scope": {
+                        "name": scope_metrics.scope.name,
+                        "version": scope_metrics.scope.version,
+                    },
+                    "metrics": []
+                }
+                
+                for metric in scope_metrics.metrics:
+                    metric_data = {
+                        "name": metric.name,
+                        "description": metric.description,
+                        "unit": metric.unit,
+                        "data": []
+                    }
+                    
+                    for point in metric.data.data_points:
+                        point_data = {
+                            "value": point.value,
+                            "timestamp": point.timestamp,
+                            "attributes": dict(point.attributes)
+                        }
+                        metric_data["data"].append(point_data)
+                    
+                    scope_data["metrics"].append(metric_data)
+                
+                metrics_dict["scope_metrics"].append(scope_data)
+
+            # Write to file
+            with open(filepath, 'w') as f:
+                json_str = json.dumps(metrics_dict, indent=2).replace("\n", "")
+                f.write(json_str + "\n")
+
             return MetricExportResult.SUCCESS
-        except Exception as e:
-            print(f"Error exporting metrics: {str(e)}")
+        except Exception:
             return MetricExportResult.FAILURE
 
     def shutdown(self):
-        if self.file:
-            self.file.close()
+        pass
 
-class DatabricksVolumeMetricReader(MetricReader):
-    """
-    Implementation of :class:`MetricReader` that uses DatabricksVolumeMetricsExporter
-    to export metrics.
-    """
+    def force_flush(self, timeout_millis: float = 10_000) -> bool:
+        return True
 
-    def __init__(
-        self,
-        exporter: DatabricksVolumeMetricsExporter = None,
-        metrics_dir: str = "/Volumes/cgrant/occ/arr/metrics/",
-    ):
-        super().__init__()
-        self.exporter = exporter or DatabricksVolumeMetricsExporter(metrics_dir=metrics_dir)
-
-    def _receive_metrics(self, metrics_data: MetricsData) -> None:
-        self.exporter.export(metrics_data)
-
-    def shutdown(self, timeout_millis: float = 30_000, **kwargs) -> None:
-        self.exporter.shutdown()
+    def get_preferred_temporality(self) -> AggregationTemporality:
+        return AggregationTemporality.CUMULATIVE
